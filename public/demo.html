@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>BNPL Demo</title>
+  </head>
+
+  <body style="max-width:720px;margin:40px auto;font-family:system-ui;">
+    <h1>BNPL Demo</h1>
+    <h2>Mode boutique</h2>
+
+    <h3>Produit — 129,90 €</h3>
+
+    <!-- Le widget se monte ici -->
+    <div class="bnpl-widget"
+         data-amount="129.90"
+         data-currency="EUR"
+         data-merchant="merchant_demo"></div>
+
+    <!-- On charge le script du widget -->
+    <script src="/bnpl.js"></script>
+
+    <!-- Puis on le monte -->
+    <script>
+      BNPL.mount(".bnpl-widget");
+    </script>
+
+    <hr style="margin:24px 0;" />
+
+    <p>
+      (Pour le reporting) <a href="/admin/index.html">Aller à l’admin</a>
+    </p>
+  </body>
+</html>

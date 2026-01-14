@@ -1,0 +1,24 @@
+{
+  "name": "bnpl_widget",
+  "version": "1.0.0",
+  "description": "BNPL widget MVP (2x 50/50)",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "better-sqlite3": "^12.6.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "nanoid": "^5.1.6",
+    "stripe": "^20.1.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}
