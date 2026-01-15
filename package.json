@@ -5,9 +5,16 @@
   "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "job:due": "node jobs/charge_due.js"
   },
-  "keywords": [],
+  "keywords": [
+    "bnpl",
+    "payments",
+    "stripe",
+    "widget",
+    "fintech"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {

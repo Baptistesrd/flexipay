@@ -1,25 +1,68 @@
 <!doctype html>
-<html>
+<html lang="fr">
   <head>
     <meta charset="utf-8" />
     <title>BNPL Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
   </head>
+
   <body style="max-width:960px;margin:40px auto;font-family:system-ui;">
     <h1>Reporting — merchant_demo</h1>
-    <button id="refresh">Rafraîchir</button>
-    <pre id="out" style="background:#f6f6f6;padding:12px;border-radius:10px;overflow:auto;"></pre>
+
+    <div style="margin-bottom:16px;">
+      <button id="refresh"
+        style="padding:8px 12px;border-radius:8px;border:1px solid #ddd;cursor:pointer;">
+        Rafraîchir
+      </button>
+      <span id="status" style="margin-left:12px;color:#666;font-size:13px;"></span>
+    </div>
+
+    <pre id="out"
+      style="background:#f6f6f6;padding:12px;border-radius:10px;overflow:auto;min-height:200px;">
+Chargement…
+    </pre>
 
     <script>
       const apiBase = "http://localhost:4242";
       const merchantId = "merchant_demo";
+      const apiKey = "demo_secret_key_change_me";
+
+      const out = document.getElementById("out");
+      const status = document.getElementById("status");
+      const refreshBtn = document.getElementById("refresh");
 
       async function load() {
-        const r = await fetch(`${apiBase}/v1/merchants/${merchantId}/transactions`);
-        const json = await r.json();
-        document.getElementById("out").textContent = JSON.stringify(json, null, 2);
+        status.textContent = "Chargement…";
+        refreshBtn.disabled = true;
+
+        try {
+          const r = await fetch(
+            `${apiBase}/v1/merchants/${merchantId}/transactions`,
+            {
+              headers: {
+                Authorization: `Bearer ${apiKey}`,
+              },
+            }
+          );
+
+          if (!r.ok) {
+            const text = await r.text();
+            throw new Error(text || "Erreur API");
+          }
+
+          const json = await r.json();
+          out.textContent = JSON.stringify(json, null, 2);
+          status.textContent = `Dernière mise à jour : ${new Date().toLocaleTimeString()}`;
+        } catch (e) {
+          out.textContent = "";
+          status.textContent = "";
+          alert("Erreur lors du chargement :\n" + e.message);
+        } finally {
+          refreshBtn.disabled = false;
+        }
       }
 
-      document.getElementById("refresh").addEventListener("click", load);
+      refreshBtn.addEventListener("click", load);
       load();
     </script>
   </body>

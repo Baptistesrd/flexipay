@@ -1,4 +1,14 @@
 (function () {
+  function toNumber(v) {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function eurosToCents(amountEuros) {
+    // évite les erreurs float: 129.90 -> 12990
+    return Math.round((amountEuros + Number.EPSILON) * 100);
+  }
+
   function centsToEuros(cents) {
     return (cents / 100).toFixed(2);
   }
@@ -14,24 +24,27 @@
   }
 
   function render(container, opts) {
-    const { amount, currency, merchantId, apiBase } = opts;
+    const { amountCents, currency, merchantId, apiBase } = opts;
 
     container.innerHTML = `
-      <div style="border:1px solid #ddd; padding:12px; border-radius:10px; font-family:system-ui;">
-        <div style="font-weight:600; margin-bottom:6px;">Payez en 2 fois</div>
-        <div id="bnpl-lines" style="margin-bottom:10px; color:#333;">Calcul...</div>
-        <button id="bnpl-btn" style="padding:10px 12px; border-radius:10px; border:0; background:black; color:white; cursor:pointer;">
+      <div style="border:1px solid #ddd; padding:12px; border-radius:12px; font-family:system-ui;">
+        <div style="font-weight:650; margin-bottom:6px;">Payez en 2 fois</div>
+        <div data-bnpl-lines style="margin-bottom:10px; color:#333;">Calcul...</div>
+        <button data-bnpl-btn style="padding:10px 12px; border-radius:10px; border:0; background:black; color:white; cursor:pointer;">
           Payer 50% maintenant
         </button>
-        <div id="bnpl-msg" style="margin-top:8px; font-size:12px; color:#666;"></div>
+        <div data-bnpl-msg style="margin-top:8px; font-size:12px; color:#666;"></div>
       </div>
     `;
 
-    const lines = container.querySelector("#bnpl-lines");
-    const btn = container.querySelector("#bnpl-btn");
-    const msg = container.querySelector("#bnpl-msg");
+    const lines = container.querySelector("[data-bnpl-lines]");
+    const btn = container.querySelector("[data-bnpl-btn]");
+    const msg = container.querySelector("[data-bnpl-msg]");
 
-    postJSON(`${apiBase}/v1/quote`, { amount, currency })
+    // On envoie un amount "euros" à ton API existante (qui attend number en euros)
+    const amountEuros = amountCents / 100;
+
+    postJSON(`${apiBase}/v1/quote`, { amount: amountEuros, currency })
       .then((q) => {
         const i1 = q.installments[0];
         const i2 = q.installments[1];
@@ -44,31 +57,52 @@
 
     btn.addEventListener("click", async () => {
       msg.textContent = "Création de la session...";
+      btn.disabled = true;
+      btn.style.opacity = "0.7";
       try {
         const session = await postJSON(`${apiBase}/v1/checkout/session`, {
           merchantId,
           orderRef: `demo-${Date.now()}`,
-          amount,
+          amount: amountEuros,
           currency,
         });
 
-        window.location.href = window.location.href = session.checkoutUrl;
+        window.location.href = session.checkoutUrl;
       } catch (e) {
-        msg.textContent = "Erreur : " + e.message;
+        msg.textContent = "Erreur : " + (e.message || "inconnue");
+        btn.disabled = false;
+        btn.style.opacity = "1";
       }
     });
   }
 
+  function mountOne(el, apiBase) {
+    // Préfère data-amount-cents si dispo, sinon data-amount (euros)
+    const currency = el.dataset.currency || "EUR";
+    const merchantId = el.dataset.merchant || "merchant_demo";
+
+    let amountCents = null;
+
+    if (el.dataset.amountCents) {
+      const c = toNumber(el.dataset.amountCents);
+      if (c != null) amountCents = Math.round(c);
+    } else if (el.dataset.amount) {
+      const euros = toNumber(el.dataset.amount);
+      if (euros != null) amountCents = eurosToCents(euros);
+    }
+
+    if (amountCents == null || amountCents <= 0) {
+      el.textContent = "BNPL: montant invalide";
+      return;
+    }
+
+    render(el, { amountCents, currency, merchantId, apiBase });
+  }
+
   window.BNPL = {
     mount: (selector, apiBase = "http://localhost:4242") => {
-      const el = document.querySelector(selector);
-      if (!el) return;
-
-      const amount = Number(el.dataset.amount);
-      const currency = el.dataset.currency || "EUR";
-      const merchantId = el.dataset.merchant || "merchant_demo";
-
-      render(el, { amount, currency, merchantId, apiBase });
+      const els = document.querySelectorAll(selector);
+      els.forEach((el) => mountOne(el, apiBase));
     },
   };
 })();
