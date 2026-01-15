@@ -28,10 +28,10 @@
 
     container.innerHTML = `
       <div style="border:1px solid #ddd; padding:12px; border-radius:12px; font-family:system-ui;">
-        <div style="font-weight:650; margin-bottom:6px;">Payez en 2 fois</div>
+        <div style="font-weight:650; margin-bottom:6px;">Pay in two instalments</div>
         <div data-bnpl-lines style="margin-bottom:10px; color:#333;">Calcul...</div>
         <button data-bnpl-btn style="padding:10px 12px; border-radius:10px; border:0; background:black; color:white; cursor:pointer;">
-          Payer 50% maintenant
+          Pay 50% now
         </button>
         <div data-bnpl-msg style="margin-top:8px; font-size:12px; color:#666;"></div>
       </div>
@@ -49,14 +49,14 @@
         const i1 = q.installments[0];
         const i2 = q.installments[1];
         lines.innerHTML = `
-          1) Aujourd’hui : <b>${centsToEuros(i1.amountCents)} ${currency}</b><br/>
-          2) Le ${i2.dueDate} : <b>${centsToEuros(i2.amountCents)} ${currency}</b>
+          Today : <b>${centsToEuros(i1.amountCents)} ${currency}</b><br/>
+          On ${i2.dueDate} : <b>${centsToEuros(i2.amountCents)} ${currency}</b>
         `;
       })
-      .catch(() => (lines.textContent = "Impossible de calculer."));
+      .catch(() => (lines.textContent = "Impossible to calculate instalments"));
 
     btn.addEventListener("click", async () => {
-      msg.textContent = "Création de la session...";
+      msg.textContent = "Creating session...";
       btn.disabled = true;
       btn.style.opacity = "0.7";
       try {

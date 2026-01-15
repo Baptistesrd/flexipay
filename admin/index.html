@@ -7,19 +7,19 @@
   </head>
 
   <body style="max-width:960px;margin:40px auto;font-family:system-ui;">
-    <h1>Reporting — merchant_demo</h1>
+    <h1>Your reporting</h1>
 
     <div style="margin-bottom:16px;">
       <button id="refresh"
         style="padding:8px 12px;border-radius:8px;border:1px solid #ddd;cursor:pointer;">
-        Rafraîchir
+        Reload
       </button>
       <span id="status" style="margin-left:12px;color:#666;font-size:13px;"></span>
     </div>
 
     <pre id="out"
       style="background:#f6f6f6;padding:12px;border-radius:10px;overflow:auto;min-height:200px;">
-Chargement…
+Loading…
     </pre>
 
     <script>
@@ -52,11 +52,11 @@ Chargement…
 
           const json = await r.json();
           out.textContent = JSON.stringify(json, null, 2);
-          status.textContent = `Dernière mise à jour : ${new Date().toLocaleTimeString()}`;
+          status.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
         } catch (e) {
           out.textContent = "";
           status.textContent = "";
-          alert("Erreur lors du chargement :\n" + e.message);
+          alert("Error loading data:\n" + e.message);
         } finally {
           refreshBtn.disabled = false;
         }
