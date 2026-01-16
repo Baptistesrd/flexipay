@@ -5,7 +5,6 @@
   }
 
   function eurosToCents(amountEuros) {
-    // évite les erreurs float: 129.90 -> 12990
     return Math.round((amountEuros + Number.EPSILON) * 100);
   }
 
@@ -23,25 +22,80 @@
     return r.json();
   }
 
+  function injectStyle(container) {
+    const style = document.createElement("style");
+    style.textContent = `
+      .bnpl-card {
+        border: 1px solid #e4e4e7;
+        border-radius: 16px;
+        padding: 14px;
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+
+      .bnpl-title {
+        font-weight: 600;
+        margin-bottom: 6px;
+        font-size: 14px;
+      }
+
+      .bnpl-lines {
+        font-size: 13px;
+        margin-bottom: 12px;
+        color: #333;
+        line-height: 1.4;
+      }
+
+      .bnpl-btn {
+        width: 100%;
+        padding: 14px;
+        border-radius: 14px;
+        border: none;
+        background: #000;
+        color: #fff;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .bnpl-btn:disabled {
+        opacity: 0.6;
+      }
+
+      .bnpl-msg {
+        margin-top: 8px;
+        font-size: 12px;
+        color: #666;
+        text-align: center;
+      }
+
+      @media (min-width: 768px) {
+        .bnpl-btn {
+          font-size: 14px;
+          padding: 12px;
+        }
+      }
+    `;
+    container.appendChild(style);
+  }
+
   function render(container, opts) {
     const { amountCents, currency, merchantId, apiBase } = opts;
 
     container.innerHTML = `
-      <div style="border:1px solid #ddd; padding:12px; border-radius:12px; font-family:system-ui;">
-        <div style="font-weight:650; margin-bottom:6px;">Pay in two instalments</div>
-        <div data-bnpl-lines style="margin-bottom:10px; color:#333;">Calcul...</div>
-        <button data-bnpl-btn style="padding:10px 12px; border-radius:10px; border:0; background:black; color:white; cursor:pointer;">
-          Pay 50% now
-        </button>
-        <div data-bnpl-msg style="margin-top:8px; font-size:12px; color:#666;"></div>
+      <div class="bnpl-card">
+        <div class="bnpl-title">Pay in 2 instalments</div>
+        <div class="bnpl-lines">Calculating…</div>
+        <button class="bnpl-btn">Pay 50% now</button>
+        <div class="bnpl-msg"></div>
       </div>
     `;
 
-    const lines = container.querySelector("[data-bnpl-lines]");
-    const btn = container.querySelector("[data-bnpl-btn]");
-    const msg = container.querySelector("[data-bnpl-msg]");
+    injectStyle(container);
 
-    // On envoie un amount "euros" à ton API existante (qui attend number en euros)
+    const lines = container.querySelector(".bnpl-lines");
+    const btn = container.querySelector(".bnpl-btn");
+    const msg = container.querySelector(".bnpl-msg");
+
     const amountEuros = amountCents / 100;
 
     postJSON(`${apiBase}/v1/quote`, { amount: amountEuros, currency })
@@ -49,16 +103,18 @@
         const i1 = q.installments[0];
         const i2 = q.installments[1];
         lines.innerHTML = `
-          Today : <b>${centsToEuros(i1.amountCents)} ${currency}</b><br/>
-          On ${i2.dueDate} : <b>${centsToEuros(i2.amountCents)} ${currency}</b>
+          Today: <b>${centsToEuros(i1.amountCents)} ${currency}</b><br/>
+          In 30 days: <b>${centsToEuros(i2.amountCents)} ${currency}</b>
         `;
       })
-      .catch(() => (lines.textContent = "Impossible to calculate instalments"));
+      .catch(() => {
+        lines.textContent = "Unable to calculate instalments";
+      });
 
     btn.addEventListener("click", async () => {
-      msg.textContent = "Creating session...";
+      msg.textContent = "Redirecting to secure payment…";
       btn.disabled = true;
-      btn.style.opacity = "0.7";
+
       try {
         const session = await postJSON(`${apiBase}/v1/checkout/session`, {
           merchantId,
@@ -69,15 +125,13 @@
 
         window.location.href = session.checkoutUrl;
       } catch (e) {
-        msg.textContent = "Erreur : " + (e.message || "inconnue");
+        msg.textContent = "Payment error. Please try again.";
         btn.disabled = false;
-        btn.style.opacity = "1";
       }
     });
   }
 
   function mountOne(el, apiBase) {
-    // Préfère data-amount-cents si dispo, sinon data-amount (euros)
     const currency = el.dataset.currency || "EUR";
     const merchantId = el.dataset.merchant || "merchant_demo";
 
@@ -91,8 +145,8 @@
       if (euros != null) amountCents = eurosToCents(euros);
     }
 
-    if (amountCents == null || amountCents <= 0) {
-      el.textContent = "BNPL: montant invalide";
+    if (!amountCents || amountCents <= 0) {
+      el.textContent = "BNPL: invalid amount";
       return;
     }
 
@@ -100,10 +154,10 @@
   }
 
   window.BNPL = {
-  mount: (selector, apiBase = window.location.origin) => {
-    const els = document.querySelectorAll(selector);
-    els.forEach((el) => mountOne(el, apiBase));
-  },
-};
-
+    mount: (selector, apiBase = window.location.origin) => {
+      document.querySelectorAll(selector).forEach((el) =>
+        mountOne(el, apiBase)
+      );
+    },
+  };
 })();
