@@ -100,9 +100,10 @@
   }
 
   window.BNPL = {
-    mount: (selector, apiBase = "http://localhost:4242") => {
-      const els = document.querySelectorAll(selector);
-      els.forEach((el) => mountOne(el, apiBase));
-    },
-  };
+  mount: (selector, apiBase = window.location.origin) => {
+    const els = document.querySelectorAll(selector);
+    els.forEach((el) => mountOne(el, apiBase));
+  },
+};
+
 })();
