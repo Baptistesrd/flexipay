@@ -41,6 +41,7 @@
         padding: 28px 18px 56px;
       }
 
+      /* ── Topbar ── */
       .topbar {
         display: flex;
         align-items: center;
@@ -52,17 +53,8 @@
       .brand { display: flex; align-items: center; gap: 10px; }
       .logo { width: 36px; height: 36px; border-radius: 14px; background: #000; }
 
-      .brand h1 {
-        font-size: 14px;
-        margin: 0;
-        letter-spacing: -0.01em;
-      }
-
-      .brand p {
-        margin: 0;
-        font-size: 12px;
-        color: var(--muted);
-      }
+      .brand h1 { font-size: 14px; margin: 0; letter-spacing: -0.01em; }
+      .brand p  { margin: 0; font-size: 12px; color: var(--muted); }
 
       .actions { display: flex; align-items: center; gap: 10px; }
 
@@ -86,6 +78,31 @@
       .btn.primary { background: #000; color: #fff; border-color: #000; }
       .btn.primary:hover { background: #111; border-color: #111; }
 
+      /* ── State banner (success / cancel) ── */
+      .state-banner {
+        display: none;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 16px 20px;
+        border-radius: 16px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      .state-banner.success {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        color: #166534;
+      }
+      .state-banner.canceled {
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        color: #9a3412;
+      }
+      .state-banner .icon { font-size: 20px; flex-shrink: 0; line-height: 1.4; }
+      .state-banner strong { display: block; margin-bottom: 2px; }
+
+      /* ── Hero / checkout card ── */
       .hero {
         display: grid;
         grid-template-columns: 1.15fr 0.85fr;
@@ -121,42 +138,6 @@
 
       .dot { width: 7px; height: 7px; border-radius: 99px; background: #111; }
 
-      .headline {
-        margin: 12px 0 6px;
-        font-size: 34px;
-        line-height: 1.06;
-        letter-spacing: -0.03em;
-      }
-
-      .sub {
-        margin: 0;
-        color: var(--muted);
-        font-size: 15px;
-        line-height: 1.55;
-        max-width: 60ch;
-      }
-
-      .grid2 {
-        margin-top: 14px;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-      }
-
-      @media (max-width: 520px) {
-        .grid2 { grid-template-columns: 1fr; }
-      }
-
-      .pill {
-        border: 1px solid var(--line);
-        border-radius: 16px;
-        padding: 12px;
-        background: rgba(255, 255, 255, 0.7);
-      }
-
-      .pill .t { font-size: 12px; color: var(--muted); margin: 0 0 4px; }
-      .pill .v { font-size: 13px; font-weight: 700; margin: 0; }
-
       .sectionTitle {
         font-size: 12px;
         color: var(--muted);
@@ -188,7 +169,7 @@
       }
 
       .pname { margin: 0; font-weight: 700; font-size: 14px; }
-      .psub { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+      .psub  { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
       .price { margin-left: auto; font-weight: 800; }
 
       .footer {
@@ -202,42 +183,22 @@
       }
 
       code {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-          "Courier New", monospace;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", "Courier New", monospace;
       }
+
       @media (max-width: 640px) {
-  .hero {
-    grid-template-columns: 1fr;
-  }
-
-  .wrap {
-    padding: 16px 12px 32px;
-  }
-
-  .headline {
-    font-size: 26px;
-  }
-
-  .panel {
-    padding: 10px;
-  }
-
-  .thumb {
-    width: 52px;
-    height: 52px;
-  }
-
-  button,
-  .btn {
-    width: 100%;
-  }
-}
-
+        .wrap    { padding: 16px 12px 32px; }
+        .panel   { padding: 10px; }
+        .thumb   { width: 52px; height: 52px; }
+        button, .btn { width: 100%; }
+      }
     </style>
   </head>
 
   <body>
     <div class="wrap">
+
       <!-- Topbar -->
       <div class="topbar">
         <div class="brand">
@@ -247,53 +208,111 @@
             <p>Live Demo</p>
           </div>
         </div>
-
         <div class="actions">
           <a class="btn" href="/admin/index.html">Merchant reporting</a>
         </div>
       </div>
 
+      <!-- State banner — shown on success or cancel redirect -->
+      <div id="state-banner" class="state-banner" role="alert" aria-live="polite">
+        <span class="icon" id="banner-icon"></span>
+        <div>
+          <strong id="banner-title"></strong>
+          <span id="banner-body"></span>
+        </div>
+      </div>
 
-        <!-- Right: Checkout -->
-        <div class="card" id="checkout">
-          <div class="inner">
-            <div class="sectionTitle">Checkout preview</div>
+      <!-- Checkout card -->
+      <div class="card" id="checkout">
+        <div class="inner">
+          <div class="sectionTitle">Checkout preview</div>
 
-            <div class="panel">
-              <div class="product">
-                <img src="/sneaky.png" alt="Sneakers" class="thumb" />
-                <div>
-                  <p class="pname">Sneakers</p>
-                  <p class="psub">Premium edition • Size 42</p>
-                </div>
-                <div class="price">€129.90</div>
+          <div class="panel">
+            <div class="product">
+              <img src="/sneaky.png" alt="Sneakers" class="thumb" />
+              <div>
+                <p class="pname">Sneakers</p>
+                <p class="psub">Premium edition • Size 42</p>
               </div>
+              <div class="price">€129.90</div>
+            </div>
 
-              <div style="margin-top: 12px;">
-                <div
-                  class="bnpl-widget"
-                  data-amount="129.90"
-                  data-currency="EUR"
-                  data-merchant="merchant_demo"
-                ></div>
-              </div>
+            <div style="margin-top: 12px;" id="widget-slot">
+              <div
+                class="bnpl-widget"
+                data-amount="129.90"
+                data-currency="EUR"
+                data-merchant="merchant_demo"
+              ></div>
+            </div>
 
-              <div class="footer">
-                <span>Secure payments • Powered by Flexipay</span>
-                <a href="/admin/index.html">View transactions →</a>
-              </div>
+            <div class="footer">
+              <span>Secure payments • Powered by Flexipay</span>
+              <a href="/admin/index.html">View transactions →</a>
             </div>
           </div>
         </div>
       </div>
+
     </div>
 
     <!-- Widget script -->
     <script src="/bnpl.js"></script>
 
-    <!-- Mount widget -->
+    <!-- Mount widget + handle success / cancel redirects -->
     <script>
-      BNPL.mount(".bnpl-widget");
+      (function () {
+        const params = new URLSearchParams(window.location.search);
+        const banner = document.getElementById("state-banner");
+        const bannerIcon = document.getElementById("banner-icon");
+        const bannerTitle = document.getElementById("banner-title");
+        const bannerBody = document.getElementById("banner-body");
+        const widgetSlot = document.getElementById("widget-slot");
+
+        function showBanner(type, icon, title, body) {
+          banner.className = "state-banner " + type;
+          banner.style.display = "flex";
+          bannerIcon.textContent = icon;
+          bannerTitle.textContent = title;
+          bannerBody.textContent = body;
+        }
+
+        if (params.get("success") === "1") {
+          showBanner(
+            "success",
+            "✅",
+            "Payment confirmed!",
+            "Your first instalment was charged. The second will be collected automatically in 30 days."
+          );
+          // Hide the widget — no need to show it again after a completed checkout.
+          widgetSlot.style.display = "none";
+
+          // Clean the URL so a page refresh doesn't re-show the banner.
+          history.replaceState(null, "", "/demo.html");
+
+        } else if (params.get("canceled") === "1") {
+          const orderId = params.get("orderId");
+
+          showBanner(
+            "canceled",
+            "⚠️",
+            "Payment cancelled.",
+            "Your order was not charged. You can try again below."
+          );
+
+          // Mark the order as cancelled server-side so it doesn't sit as orphaned.
+          if (orderId) {
+            fetch(`/v1/orders/${encodeURIComponent(orderId)}/cancel`, { method: "POST" })
+              .catch(() => {/* best-effort — non-critical */});
+          }
+
+          history.replaceState(null, "", "/demo.html");
+
+        } else {
+          // Normal page load — mount the widget.
+          BNPL.mount(".bnpl-widget");
+        }
+      })();
     </script>
   </body>
 </html>

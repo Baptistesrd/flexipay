@@ -1,69 +1,185 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>BNPL Admin</title>
+    <title>FlexiPay — Merchant Reporting</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body { max-width: 960px; margin: 40px auto; font-family: system-ui; padding: 0 16px; }
+      h1 { margin-bottom: 4px; }
+      .subtitle { color: #666; font-size: 13px; margin-bottom: 24px; }
+
+      #config-panel {
+        background: #f6f6f6;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+      }
+      #config-panel h2 { margin: 0 0 12px; font-size: 14px; }
+      .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+      .field label { font-size: 12px; color: #555; font-weight: 600; }
+      .field input {
+        padding: 8px 10px; border-radius: 6px; border: 1px solid #ccc;
+        font-size: 13px; font-family: ui-monospace, monospace;
+      }
+      .btn-row { display: flex; gap: 8px; margin-top: 4px; }
+      button {
+        padding: 8px 14px; border-radius: 8px; border: 1px solid #ddd;
+        background: #fff; cursor: pointer; font-size: 13px; font-weight: 600;
+      }
+      button.primary { background: #000; color: #fff; border-color: #000; }
+      button:disabled { opacity: 0.5; cursor: default; }
+
+      #toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+      #status { color: #666; font-size: 13px; }
+
+      #out {
+        background: #f6f6f6; padding: 14px; border-radius: 10px;
+        overflow: auto; min-height: 200px; font-size: 12px;
+        font-family: ui-monospace, monospace; white-space: pre;
+      }
+    </style>
   </head>
 
-  <body style="max-width:960px;margin:40px auto;font-family:system-ui;">
-    <h1>Your reporting</h1>
+  <body>
+    <h1>Merchant Reporting</h1>
+    <p class="subtitle">Credentials are stored in your browser's localStorage — never sent anywhere except your own FlexiPay API.</p>
 
-    <div style="margin-bottom:16px;">
-      <button id="refresh"
-        style="padding:8px 12px;border-radius:8px;border:1px solid #ddd;cursor:pointer;">
-        Reload
-      </button>
-      <span id="status" style="margin-left:12px;color:#666;font-size:13px;"></span>
+    <!-- Config panel — shown until credentials are saved -->
+    <div id="config-panel">
+      <h2>⚙ API Credentials</h2>
+      <div class="field">
+        <label for="cfg-merchant-id">Merchant ID</label>
+        <input id="cfg-merchant-id" type="text" placeholder="e.g. merchant_demo" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label for="cfg-api-key">API Key</label>
+        <input id="cfg-api-key" type="password" placeholder="your api key" autocomplete="off" />
+      </div>
+      <div class="btn-row">
+        <button class="primary" id="cfg-save">Save &amp; load</button>
+        <button id="cfg-clear">Clear credentials</button>
+      </div>
     </div>
 
-    <pre id="out"
-      style="background:#f6f6f6;padding:12px;border-radius:10px;overflow:auto;min-height:200px;">
-Loading…
-    </pre>
+    <div id="toolbar">
+      <button id="refresh" disabled>Reload</button>
+      <button id="settings-toggle">⚙ Settings</button>
+      <span id="status"></span>
+    </div>
+
+    <pre id="out">Configure credentials above, then click "Save &amp; load".</pre>
 
     <script>
-      const apiBase =  window.location.origin;
-      const merchantId = "merchant_demo";
-      const apiKey = "demo_secret_key_change_me";
+      const LS_ID  = "flexipay_merchant_id";
+      const LS_KEY = "flexipay_api_key";
+      const apiBase = window.location.origin;
 
-      const out = document.getElementById("out");
-      const status = document.getElementById("status");
+      const cfgPanel   = document.getElementById("config-panel");
+      const cfgId      = document.getElementById("cfg-merchant-id");
+      const cfgKey     = document.getElementById("cfg-api-key");
+      const cfgSave    = document.getElementById("cfg-save");
+      const cfgClear   = document.getElementById("cfg-clear");
       const refreshBtn = document.getElementById("refresh");
+      const settingsBtn = document.getElementById("settings-toggle");
+      const out        = document.getElementById("out");
+      const status     = document.getElementById("status");
 
+      // ── Credential management ─────────────────────────────────────────────
+      function getCredentials() {
+        return {
+          merchantId: localStorage.getItem(LS_ID) || "",
+          apiKey:     localStorage.getItem(LS_KEY) || "",
+        };
+      }
+
+      function hasCredentials() {
+        const { merchantId, apiKey } = getCredentials();
+        return merchantId.length > 0 && apiKey.length > 0;
+      }
+
+      function applyStoredToInputs() {
+        const { merchantId, apiKey } = getCredentials();
+        cfgId.value  = merchantId;
+        cfgKey.value = apiKey;
+      }
+
+      function showPanel(visible) {
+        cfgPanel.style.display = visible ? "block" : "none";
+      }
+
+      cfgSave.addEventListener("click", () => {
+        const id  = cfgId.value.trim();
+        const key = cfgKey.value.trim();
+        if (!id || !key) { alert("Both fields are required."); return; }
+        localStorage.setItem(LS_ID,  id);
+        localStorage.setItem(LS_KEY, key);
+        showPanel(false);
+        refreshBtn.disabled = false;
+        load();
+      });
+
+      cfgClear.addEventListener("click", () => {
+        localStorage.removeItem(LS_ID);
+        localStorage.removeItem(LS_KEY);
+        cfgId.value = "";
+        cfgKey.value = "";
+        out.textContent = "Credentials cleared. Enter new credentials above.";
+        status.textContent = "";
+        refreshBtn.disabled = true;
+        showPanel(true);
+      });
+
+      settingsBtn.addEventListener("click", () => {
+        applyStoredToInputs();
+        showPanel(cfgPanel.style.display === "none");
+      });
+
+      // ── Data loading ──────────────────────────────────────────────────────
       async function load() {
-        status.textContent = "Chargement…";
+        if (!hasCredentials()) {
+          showPanel(true);
+          return;
+        }
+
+        const { merchantId, apiKey } = getCredentials();
+        status.textContent = "Loading…";
         refreshBtn.disabled = true;
 
         try {
           const r = await fetch(
-            `${apiBase}/v1/merchants/${merchantId}/transactions`,
-            {
-              headers: {
-                Authorization: `Bearer ${apiKey}`,
-              },
-            }
+            `${apiBase}/v1/merchants/${encodeURIComponent(merchantId)}/transactions`,
+            { headers: { Authorization: `Bearer ${apiKey}` } }
           );
 
           if (!r.ok) {
             const text = await r.text();
-            throw new Error(text || "Erreur API");
+            throw new Error(`HTTP ${r.status}: ${text}`);
           }
 
           const json = await r.json();
           out.textContent = JSON.stringify(json, null, 2);
           status.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
         } catch (e) {
-          out.textContent = "";
+          out.textContent = `Error: ${e.message}`;
           status.textContent = "";
-          alert("Error loading data:\n" + e.message);
         } finally {
           refreshBtn.disabled = false;
         }
       }
 
       refreshBtn.addEventListener("click", load);
-      load();
+
+      // ── Init ──────────────────────────────────────────────────────────────
+      applyStoredToInputs();
+      if (hasCredentials()) {
+        showPanel(false);
+        refreshBtn.disabled = false;
+        load();
+      } else {
+        showPanel(true);
+      }
     </script>
   </body>
 </html>

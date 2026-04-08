@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n \"^[[:space:]]*//\" \"C:\\\\Users\\\\Utilisateur\\\\Desktop\\\\BNPL_widget\\\\server.js\")",
+      "Bash(npm install:*)",
+      "Bash(node -e ':*)",
+      "Bash(node -e \"const fs=require\\('fs'\\); const c=fs.readFileSync\\('db.js','utf8'\\); const lines=c.split\\('\\\\n'\\); console.log\\('Line 60 hex:', Buffer.from\\(lines[59]\\).toString\\('hex'\\)\\); console.log\\('Line 61 hex:', Buffer.from\\(lines[60]\\).toString\\('hex'\\)\\);\")",
+      "Bash(node server.js)",
+      "Bash(curl -s http://localhost:4242/health)",
+      "Bash(curl -s -X POST http://localhost:4242/v1/quote -H \"Content-Type: application/json\" -d '{\"amount\":129.90}')",
+      "Bash(curl -s -X POST http://localhost:4242/v1/quote -H \"Content-Type: application/json\" -d '{\"amount\":-5}')",
+      "Bash(curl -s -X POST http://localhost:4242/v1/checkout/session -H \"Content-Type: application/json\" -d '{\"merchantId\":\"nonexistent\",\"amount\":10}')",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" -X POST http://localhost:4242/v1/quote -H \"Content-Type: application/json\" -d '{\"amount\":10}')",
+      "Bash(kill %1)"
+    ]
+  }
+}

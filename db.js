@@ -2,7 +2,7 @@
 const Database = require("better-sqlite3");
 const db = new Database("data.sqlite");
 
-// 1) Crée les tables si elles n'existent pas
+// 1) Create tables if they don't exist
 db.exec(`
   CREATE TABLE IF NOT EXISTS merchants (
     id TEXT PRIMARY KEY,
@@ -45,7 +45,7 @@ db.exec(`
   );
 `);
 
-// 2) Migration robuste : ajoute les colonnes si elles manquent (DB déjà existante)
+// 2) Safe column additions for existing databases
 function hasColumn(table, col) {
   const cols = db.prepare(`PRAGMA table_info(${table})`).all();
   return cols.some(c => c.name === col);
@@ -54,14 +54,17 @@ function hasColumn(table, col) {
 function addColumnIfMissing(table, col, ddl) {
   if (hasColumn(table, col)) return;
   db.prepare(`ALTER TABLE ${table} ADD COLUMN ${ddl}`).run();
-  console.log(`✅ DB migrate: added ${table}.${col}`);
+  console.log(`DB migrate: added ${table}.${col}`);
 }
 
-// installments: colonnes “prod”
+// installments: runtime columns
 addColumnIfMissing("installments", "stripe_payment_intent_id", "stripe_payment_intent_id TEXT");
 addColumnIfMissing("installments", "last_error", "last_error TEXT");
 addColumnIfMissing("installments", "updated_at", "updated_at TEXT");
 addColumnIfMissing("installments", "retry_count", "retry_count INTEGER DEFAULT 0");
 addColumnIfMissing("installments", "next_retry_date", "next_retry_date TEXT");
+
+// orders: lifecycle status (active | cancelled | completed)
+addColumnIfMissing("orders", "status", "status TEXT NOT NULL DEFAULT 'active'");
 
 module.exports = db;
