@@ -11,7 +11,7 @@ const { nowIso } = require("./src/lib/helpers");
 
 const webhooksRouter = require("./src/routes/webhooks");
 const checkoutRouter = require("./src/routes/checkout");
-const merchantsRouter = require("./src/routes/merchants");
+const { router: merchantsRouter, installmentsRouter } = require("./src/routes/merchants");
 const adminRouter = require("./src/routes/admin");
 const jobsRouter = require("./src/routes/jobs");
 
@@ -67,10 +67,11 @@ app.get("/health", (_req, res) => {
 });
 
 // ── API routes ────────────────────────────────────────────────────────────────
-app.use("/v1", checkoutRouter);              // /v1/quote, /v1/checkout/session, /v1/orders/:id/cancel
-app.use("/v1/merchants", merchantsRouter);  // /v1/merchants/:id/transactions
-app.use("/v1/admin", adminRouter);          // /v1/admin/merchants
-app.use("/v1/jobs", jobsRouter);            // /v1/jobs/charge-due
+app.use("/v1", checkoutRouter);                    // /v1/quote, /v1/checkout/session, /v1/orders/:id/cancel
+app.use("/v1/merchants", merchantsRouter);        // /v1/merchants/:id/transactions
+app.use("/v1/installments", installmentsRouter);  // /v1/installments/:id/recovery
+app.use("/v1/admin", adminRouter);                // /v1/admin/merchants
+app.use("/v1/jobs", jobsRouter);                  // /v1/jobs/charge-due
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 4242;

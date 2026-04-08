@@ -11,7 +11,13 @@
       "Bash(curl -s -X POST http://localhost:4242/v1/quote -H \"Content-Type: application/json\" -d '{\"amount\":-5}')",
       "Bash(curl -s -X POST http://localhost:4242/v1/checkout/session -H \"Content-Type: application/json\" -d '{\"merchantId\":\"nonexistent\",\"amount\":10}')",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" -X POST http://localhost:4242/v1/quote -H \"Content-Type: application/json\" -d '{\"amount\":10}')",
-      "Bash(kill %1)"
+      "Bash(kill %1)",
+      "Skill(claude-api)",
+      "Bash(curl -s \"http://localhost:4242/v1/installments/test123/recovery\")",
+      "Bash(curl -s \"http://localhost:4242/v1/installments/test123/recovery?merchantId=merchant_demo\" -H \"Authorization: Bearer wrong\")",
+      "Bash(node -e \"process.stdin.resume\\(\\); let d=''; process.stdin.on\\('data',c=>d+=c\\); process.stdin.on\\('end',\\(\\)=>{ const r=JSON.parse\\(d\\); console.log\\('rows count:', r.rows.length, '| has agent_decision field:', r.rows.length>0 ? 'agent_decision' in r.rows[0] : 'N/A'\\); }\\);\" echo \"\" kill %1 echo \"DONE\")",
+      "Bash(node -e \" process.stdin.resume\\(\\); let d=''; process.stdin.on\\('data',c=>d+=c\\); process.stdin.on\\('end',\\(\\)=>{ const r=JSON.parse\\(d\\); const row=r.rows[0]; if\\(row\\) { console.log\\('agent_decision in row:', 'agent_decision' in row\\); console.log\\('agent_message in row:', 'agent_message' in row\\); console.log\\('sca_url in row:', 'sca_url' in row\\); } else console.log\\('no rows'\\); }\\); \" echo \"\" echo \"DONE\" taskkill /F /IM node.exe)",
+      "Bash(timeout 8 node -e ':*)"
     ]
   }
 }

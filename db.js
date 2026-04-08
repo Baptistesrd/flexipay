@@ -67,4 +67,9 @@ addColumnIfMissing("installments", "next_retry_date", "next_retry_date TEXT");
 // orders: lifecycle status (active | cancelled | completed)
 addColumnIfMissing("orders", "status", "status TEXT NOT NULL DEFAULT 'active'");
 
+// installments: AI recovery agent columns
+addColumnIfMissing("installments", "agent_decision", "agent_decision TEXT");
+addColumnIfMissing("installments", "agent_message", "agent_message TEXT");
+addColumnIfMissing("installments", "sca_url", "sca_url TEXT");
+
 module.exports = db;
