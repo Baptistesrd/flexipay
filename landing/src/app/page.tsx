@@ -9,8 +9,8 @@ const DEMO_IFRAME_URL =
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_FLEXIPAY_API_URL || "http://localhost:4242";
 
-const CALENDLY_URL =
-  process.env.NEXT_PUBLIC_FLEXIPAY_CALENDLY_URL || "https://calendly.com/";
+const GITHUB_URL =
+  process.env.NEXT_PUBLIC_FLEXIPAY_GITHUB_URL || "https://github.com/";
 
 function scrollToId(id: string) {
   const el = document.getElementById(id);
@@ -55,14 +55,20 @@ export default function Page() {
             </div>
           </div>
 
-          {/* ✅ Scroll fluide via JS */}
           <nav className="hidden items-center gap-6 text-sm text-zinc-600 md:flex">
             <button
               type="button"
-              onClick={() => scrollToId("demo")}
+              onClick={() => scrollToId("how-it-works")}
               className="hover:text-zinc-900"
             >
-              Demo
+              How it works
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollToId("agent")}
+              className="hover:text-zinc-900"
+            >
+              Agent
             </button>
             <button
               type="button"
@@ -71,16 +77,23 @@ export default function Page() {
             >
               API
             </button>
+            <button
+              type="button"
+              onClick={() => scrollToId("demo")}
+              className="hover:text-zinc-900"
+            >
+              Demo
+            </button>
           </nav>
 
           <div className="flex items-center gap-3">
             <a
-              href={CALENDLY_URL}
+              href={GITHUB_URL}
               target="_blank"
               rel="noreferrer"
               className="rounded-xl bg-black px-4 py-2 text-sm font-medium text-white hover:opacity-90"
             >
-              Book a demo
+              View on GitHub
             </a>
           </div>
         </div>
@@ -91,29 +104,29 @@ export default function Page() {
         <div className="grid gap-12 md:grid-cols-2 md:items-center">
           {/* Left */}
           <div>
-
             <h1 className="mt-6 text-4xl font-semibold tracking-tight md:text-6xl">
-              Payment{" "}
+              BNPL widget.{" "}
               <span className="relative">
                 <span className="absolute -inset-2 -z-10 rounded-3xl bg-zinc-100" />
-                in two
+                AI recovery.
               </span>{" "}
-              to boost your conversions
+              Built for marketplaces.
             </h1>
 
             <p className="mt-6 max-w-xl text-lg text-zinc-600">
-              Flexipay lets customers pay 50% now and 50% in 30 days. Integration
-              in minutes, without redoing your checkout.
+              Drop in a script tag, let buyers pay 50% now and 50% in 30 days.
+              When installments fail, the AI recovery agent decides whether to
+              retry, request re-authentication, or send a reminder — automatically.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <a
-                href={CALENDLY_URL}
+                href={GITHUB_URL}
                 target="_blank"
                 rel="noreferrer"
                 className="rounded-2xl bg-black px-6 py-3 text-sm font-medium text-white hover:opacity-90"
               >
-                Book a demo
+                View on GitHub →
               </a>
 
               <a
@@ -124,14 +137,12 @@ export default function Page() {
               >
                 Open live demo →
               </a>
-
-              {/* ✅ Scroll fluide vers l’API */}
             </div>
 
             <div className="mt-8 grid grid-cols-3 gap-3 text-sm text-zinc-600">
               <Stat label="Setup" value="Less than 10 min" />
-              <Stat label="Payment" value="Stripe" />
-              <Stat label="Widget" value="Embeddable" />
+              <Stat label="Payments" value="Stripe" />
+              <Stat label="Recovery" value="Claude API" />
             </div>
           </div>
 
@@ -178,6 +189,78 @@ export default function Page() {
         </div>
       </section>
 
+      {/* How it works */}
+      <section id="how-it-works" className="mx-auto max-w-6xl scroll-mt-24 px-6 pb-24">
+        <div className="rounded-3xl border border-zinc-200 bg-white/80 p-8 shadow-sm backdrop-blur">
+          <h2 className="text-3xl font-semibold">How it works</h2>
+          <p className="mt-3 text-zinc-600">
+            Three steps from integration to automatic recovery.
+          </p>
+
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            <Step
+              number="1"
+              title="Add the widget"
+              description="Drop a single script tag into your checkout page. Configure your merchant ID and the widget renders automatically — no rebuild needed."
+            />
+            <Step
+              number="2"
+              title="Buyer pays 50% now"
+              description="The buyer completes the first instalment via Stripe Checkout. The second instalment is scheduled 30 days later and charged off-session."
+            />
+            <Step
+              number="3"
+              title="AI handles the rest"
+              description="When the second charge fails, the AI recovery agent reads the decline code, retry history, and order context — then decides the best next action."
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* AI Recovery Agent */}
+      <section id="agent" className="mx-auto max-w-6xl scroll-mt-24 px-6 pb-24">
+        <div className="rounded-3xl border border-zinc-200 bg-white/80 p-8 shadow-sm backdrop-blur">
+          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+            <div>
+              <h2 className="text-3xl font-semibold">AI Recovery Agent</h2>
+              <p className="mt-3 max-w-2xl text-zinc-600">
+                When an installment fails, the agent receives the Stripe decline code, retry
+                count, amount, and whether the buyer paid the first instalment on time. It calls
+                Claude via the Anthropic API and returns a structured decision — no hardcoded rules.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            <DecisionCard
+              decline="insufficient_funds"
+              action="retry_tomorrow"
+              message="Your card was declined due to insufficient funds. We will try again tomorrow — no action needed."
+              reasoning="First failure, buyer paid on time before. A 24-hour retry gives the account time to reload."
+            />
+            <DecisionCard
+              decline="authentication_required"
+              action="send_sca_link"
+              message="Your bank requires additional verification. Please complete the secure payment link below."
+              reasoning="3DS challenge required. Silent retry will keep failing. A hosted Stripe Checkout link is the correct path."
+            />
+            <DecisionCard
+              decline="card_expired"
+              action="send_reminder"
+              message="Your card on file has expired. Please update your payment method to complete your order."
+              reasoning="Retrying will not help. The buyer needs to act — a direct reminder is more effective than automated retries."
+            />
+          </div>
+
+          <div className="mt-6 rounded-2xl border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
+            <span className="font-medium text-zinc-900">Graceful degradation.</span>{" "}
+            If <code className="rounded bg-zinc-200 px-1 py-0.5 text-xs">ANTHROPIC_API_KEY</code> is
+            not set, the agent is skipped and the service falls back to the deterministic retry
+            policy (Day+1, Day+3, Day+7).
+          </div>
+        </div>
+      </section>
+
       {/* API */}
       <section id="api" className="mx-auto max-w-6xl scroll-mt-24 px-6 pb-24">
         <div className="rounded-3xl border border-zinc-200 bg-white/80 p-8 shadow-sm backdrop-blur">
@@ -185,23 +268,20 @@ export default function Page() {
             <div>
               <h2 className="text-3xl font-semibold">API-first product</h2>
               <p className="mt-3 max-w-2xl text-zinc-600">
-                A simple API + an embeddable widget. Start with a quote, then create a checkout
+                A simple REST API + an embeddable widget. Start with a quote, then create a checkout
                 session. Webhooks keep statuses reliable.
               </p>
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row md:justify-end">
               <a
-  href={DEMO_IFRAME_URL}
-  target="_blank"
-  rel="noreferrer"
-  className="rounded-2xl bg-black px-6 py-3 text-sm font-medium text-white hover:opacity-90"
->
-  Open live demo →
-</a>
-
-              {/* ✅ Scroll fluide vers la démo intégrée */}
-
+                href={DEMO_IFRAME_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-2xl bg-black px-6 py-3 text-sm font-medium text-white hover:opacity-90"
+              >
+                Open live demo →
+              </a>
             </div>
           </div>
 
@@ -284,14 +364,13 @@ export default function Page() {
 
           {/* Embed area */}
           <div className="relative hidden md:block">
-  <iframe
-    key={demoKey}
-    src={DEMO_IFRAME_URL}
-    className="h-[560px] w-full"
-    title="Flexipay demo"
-    onLoad={() => setDemoLoading(false)}
-  />
-
+            <iframe
+              key={demoKey}
+              src={DEMO_IFRAME_URL}
+              className="h-[560px] w-full"
+              title="Flexipay demo"
+              onLoad={() => setDemoLoading(false)}
+            />
 
             {demoLoading && (
               <div className="pointer-events-none absolute inset-0 grid place-items-center bg-white/70 backdrop-blur">
@@ -330,6 +409,24 @@ export default function Page() {
         </div>
       </section>
 
+      {/* Built with */}
+      <section className="mx-auto max-w-6xl px-6 pb-24">
+        <div className="rounded-3xl border border-zinc-200 bg-white/80 p-8 shadow-sm backdrop-blur">
+          <h2 className="text-3xl font-semibold">Built with</h2>
+          <p className="mt-3 text-zinc-600">
+            Open-source stack, no proprietary infrastructure.
+          </p>
+
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 md:grid-cols-5">
+            <TechCard name="Node.js" role="Runtime" />
+            <TechCard name="Express" role="API server" />
+            <TechCard name="Stripe" role="Payments & webhooks" />
+            <TechCard name="SQLite" role="Persistence" />
+            <TechCard name="Claude API" role="AI recovery agent" />
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="border-t border-zinc-200 py-8 text-center text-sm text-zinc-600">
         © {new Date().getFullYear()} Flexipay - All rights reserved
@@ -343,6 +440,54 @@ function Stat({ label, value }: { label: string; value: string }) {
     <div className="rounded-xl border border-zinc-200 bg-white/70 p-3">
       <div className="text-xs text-zinc-500">{label}</div>
       <div className="font-semibold">{value}</div>
+    </div>
+  );
+}
+
+function Step({ number, title, description }: { number: string; title: string; description: string }) {
+  return (
+    <div className="rounded-2xl border border-zinc-200 bg-white p-5">
+      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-black text-sm font-semibold text-white">
+        {number}
+      </div>
+      <div className="mt-3 text-sm font-semibold">{title}</div>
+      <div className="mt-2 text-sm text-zinc-600">{description}</div>
+    </div>
+  );
+}
+
+function DecisionCard({
+  decline,
+  action,
+  message,
+  reasoning,
+}: {
+  decline: string;
+  action: string;
+  message: string;
+  reasoning: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-zinc-200 bg-white p-5">
+      <div className="inline-block rounded-lg bg-zinc-100 px-2 py-1 font-mono text-xs text-zinc-700">
+        {decline}
+      </div>
+      <div className="mt-3 inline-block rounded-lg bg-black px-2 py-1 font-mono text-xs text-white">
+        {action}
+      </div>
+      <div className="mt-3 text-sm text-zinc-800">{message}</div>
+      <div className="mt-3 border-t border-zinc-100 pt-3 text-xs text-zinc-500 italic">
+        {reasoning}
+      </div>
+    </div>
+  );
+}
+
+function TechCard({ name, role }: { name: string; role: string }) {
+  return (
+    <div className="rounded-2xl border border-zinc-200 bg-white p-4 text-center">
+      <div className="text-sm font-semibold">{name}</div>
+      <div className="mt-1 text-xs text-zinc-500">{role}</div>
     </div>
   );
 }

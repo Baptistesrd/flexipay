@@ -3,12 +3,12 @@ import "./globals.css";
 export const metadata = {
   title: "Flexipay",
   description:
-    "Flexipay adds two-part payment to your checkout in just a few minutes. Integrated widget, direct debit, merchant reporting.",
+    "Flexipay is an embeddable BNPL widget for marketplaces. Drop in a script tag, let buyers pay 50% now and 50% in 30 days, and let the AI recovery agent handle failed installments automatically.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr">
+    <html lang="en">
       <body>{children}</body>
     </html>
   );
